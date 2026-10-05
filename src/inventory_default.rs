@@ -100,5 +100,21 @@ impl Inventory for InventoryDefault {
     fn get_snapshot(&self) -> std::ptr::NonNull<String> {
         todo!()
     }
+    
+    fn filter_name(&mut self, name: String) {
+        todo!()
+    }
+    
+    fn add_item_area(&mut self, item: Box<dyn ItemType>, qty: u16) {
+        todo!()
+    }
+    
+    fn fusion(&mut self, holes: bool) {
+        todo!()
+    }
+    
+    fn merge(&mut self, other_inventory: &Self) {
+        todo!()
+    }
 
 }

@@ -3,7 +3,7 @@ use crate::inventory;
 
 #[test]
 fn test_add(){
-    let mut a: Inventory = ...;
+    //let mut a: Inventory = ...;
     assert_eq!(4, 4);
 }
 

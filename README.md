@@ -1,6 +1,6 @@
 # GCRT_API_Iventory
 ###### Game Core Reusable Tool API Inventory
-a simple intuitive Inventory with a lof of features (for games primarily, can be used for other purposes)
+a simple intuitive Inventory <u>back-end</u> with a lof of features (for games primarily, can be used for other purposes like stock management)
 
 > [!note]
 > - cross platform
@@ -14,19 +14,37 @@ Therefore no documentation is provided for it.
 UI part is made using Java (with JavaFX) another repository will be create for UI parts in rust.
 (because actual solutions doesn't fit project requirements (2026))
 
-it's inacceptable to test rust code inside the code itself
-sor i decided to create a separate directory (sorry rust...).
+> [!important]
+> test for rust code is include in the source code directly according to Rust rules (but i don't agree with this choice i prefer a dedicated repertory for tests to separate the real used code to test code...)
 
-### Project Constribution
+### Execution and Running
 
-default -> closed, ask first to access project and contribute to it
+```bash
+# compile & run
+cargo run
+# compile
+cargo build
+# 
+```
 
->[!Important]
-> NO USE OF AI
-> if staff of the project detects it you will be banned forever 
-> on this project
+for single files use : `rustc main.rs` and then run prog using `./main`.
+
+### Project Contribution
+
+CLOSED (fork if you want to contribute)
+
+### project rules
+
+#### software constraints
+
+- NRE (Not Ripple Effect)
+- ECS oriented Data and (sub) Systems
+- math opti bitset + object representation
+- Hot Reload (put update when the software is currently running)
 
 #### Cases
 
 - camelCase for types 
 - snake_case for file names
+
+<!-- very small programm because very high complexity/difficulty to make -->
