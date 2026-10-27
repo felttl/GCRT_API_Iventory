@@ -11,8 +11,7 @@ a simple intuitive Inventory <u>back-end</u> with a lof of features (for games p
 
 UI directory is intended to provide a UI to test the inventory and is not a part of this project.
 Therefore no documentation is provided for it.
-UI part is made using Java (with JavaFX) another repository will be create for UI parts in rust.
-(because actual solutions doesn't fit project requirements (2026))
+UI part is made using TypeScript (with Tauri).
 
 > [!important]
 > test for rust code is include in the source code directly according to Rust rules (but i don't agree with this choice i prefer a dedicated repertory for tests to separate the real used code to test code...)

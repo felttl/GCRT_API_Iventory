@@ -37,35 +37,44 @@ impl ItemTypeRegistryBuilder {
         Self::default()
     }
 
-    /// Register a type with zero, one or several parents.
-    /// Parents must already be registered, so cycles are impossible.
-    pub fn add(&mut self, name: &str, parents: &[ItemTypeId]) -> Result<ItemTypeId, RegistryError> {
+    /// ## Add a type with no parents
+    /// - Parents must already be registered, so cycles are impossible.
+    pub fn add(&mut self, name: &str) -> Result<ItemTypeId, RegistryError> {
+        self.addwp(name, &[])
+    }
+
+    /// ## Add a type with parents
+    /// - Register a type with zero, one or several parents.
+    /// - Parents must already be registered, so cycles are impossible (forbiden A->B->A).
+    pub fn addwp(&mut self, name: &str, parents: &[ItemTypeId]) -> Result<ItemTypeId, RegistryError> {
         if self.by_name.contains_key(name) {
             return Err(RegistryError::DuplicateName(name.to_string()));
         }
-        for p in parents {
+        for p: &ItemTypeId in parents {
             if p.index() >= self.names.len() {
                 return Err(RegistryError::UnknownParent(*p));
             }
         }
-
-        let id = ItemTypeId::new(self.names.len() as u32);
-        let mut lineage = vec![id];
-        for p in parents {
+        let id: ItemTypeId = ItemTypeId::new(self.names.len() as u32);
+        let mut lineage: Vec<ItemTypeId> = vec![id];
+        for p: &ItemTypeId in parents {
             for a in &self.lineage[p.index()] {
                 if !lineage.contains(a) {
                     lineage.push(*a); // diamond (several paths to one ancestor): kept once
                 }
             }
         }
-
         self.names.push(name.to_string());
         self.lineage.push(lineage);
         self.by_name.insert(name.to_string(), id);
         Ok(id)
     }
 
-    /// Freeze the types; the result can be shared between inventories.
+    /// ## Complete the build
+    /// - Freeze the types (calling this methode will not allow you to add more types later)
+    /// - the result can be shared between inventories.
+    /// #### version 0.1.0
+    /// - NO hot reload yet, must be recompiled if you want to add more types later
     pub fn build(self) -> Arc<ItemTypeRegistry> {
         Arc::new(ItemTypeRegistry {
             names: self.names,

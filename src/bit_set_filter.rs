@@ -62,7 +62,7 @@ impl BitSetFilter {
         &self.by_type[category.index()]
     }
 
-    /// SLOTS matching ALL the catefories (e.g. drink AND sparkling)
+    /// SLOTS matching ALL the categories (e.g. drink AND sparkling)
     pub fn matching_all(&self, categories: &[ItemTypeId]) -> Vec<u64> {
         let mut it = categories.iter();
         let Some(first) = it.next() else { return vec![0; self.slots.div_ceil(64)] };
@@ -94,7 +94,7 @@ impl BitSetFilter {
                 if word == 0 {
                     None
                 } else {
-                    let bit = word.trailing_zeros() as usize;
+                    let bit: usize = word.trailing_zeros() as usize;
                     word &= word - 1; // clear the lowset set bit
                     Some(w * 64 + bit)
                 }
@@ -106,28 +106,53 @@ impl BitSetFilter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::inv_objs::item_type_registry::{ItemTypeRegistry, ItemTypeRegistryBuilder};
+
+    /// what the inventory will do by itself when an item is placed in a slot
+    fn put(f: &mut BitSetFilter, reg: &ItemTypeRegistry, slot: usize, id: ItemTypeId) {
+        f.mark(slot, reg.lineage(id));
+    }
 
     #[test]
-    fn multi_parent_filtering() {
-        let (weapon, shotgun, launcher, axe, rocket_launcher, rpg7) = (
-            ItemTypeId::new(0), ItemTypeId::new(1), ItemTypeId::new(2),
-            ItemTypeId::new(3), ItemTypeId::new(4), ItemTypeId::new(5),
-        );
-        let mut f = BitSetFilter::new(100, 1);
-        f.mark(3, &[shotgun, weapon]);
-        f.mark(70, &[rocket_launcher, launcher, weapon, rpg7]);
-        f.mark(99, &[launcher, weapon]);
+    fn drinks_filtering() {
+        let mut b = ItemTypeRegistryBuilder::new();
+        let drink = b.add("drink", &[]).unwrap();
+        let hot = b.add("hot drink", &[drink]).unwrap();
+        let cold = b.add("cold drink", &[drink]).unwrap();
+        let milk = b.add("with milk", &[]).unwrap();
+        let sugar_free = b.add("sugar free", &[]).unwrap();
+        let sparkling = b.add("sparkling", &[cold]).unwrap();
+        let still = b.add("still", &[cold]).unwrap();
 
-        let idx = |bits: &[u64]| BitSetFilter::slot_indexes(bits).collect::<Vec<_>>();
-        println!("weapons          : {:?}", idx(f.matching(weapon)));
-        println!("shotgun          : {:?}", idx(f.matching(shotgun)));
-        println!("shotgun AND bio  : {:?}", idx(&f.matching_all(&[shotgun, bio])));
-        println!("bio OR launcher  : {:?}", idx(&f.matching_any(&[bio, launcher])));
-        assert_eq!(idx(f.matching(weapon)), vec![3, 70, 99]);
-        assert_eq!(idx(&f.matching_all(&[shotgun, bio])), vec![70]);
+        let tea = b.add("tea", &[hot]).unwrap();
+        let latte = b.add("latte", &[hot, milk]).unwrap();
+        let hot_chocolate = b.add("hot chocolate", &[hot, milk]).unwrap();
+        let soda = b.add("soda", &[sparkling]).unwrap();
+        let water = b.add("water", &[still, sugar_free]).unwrap();
+        let syrup = b.add("fruit syrup", &[cold]).unwrap();
+        let reg = b.build();
 
-        f.unmark(70, &[bubonico, shotgun, bio, launcher, weapon]);
-        assert_eq!(idx(f.matching(weapon)), vec![3, 99]);
+        let contents = [tea, latte, soda, water, hot_chocolate, syrup]; // slots 0..5
+        let mut f = BitSetFilter::new(contents.len(), reg.len());
+        for (slot, id) in contents.iter().enumerate() {
+            put(&mut f, &reg, slot, *id);
+        }
+
+        let names = |bits: &[u64]| {
+            BitSetFilter::slot_indexes(bits)
+                .map(|s| reg.name(contents[s]).unwrap())
+                .collect::<Vec<_>>()
+        };
+        println!("hot drink          : {:?}", names(f.matching(hot)));
+        println!("hot AND with milk  : {:?}", names(&f.matching_all(&[hot, milk])));
+        println!("sparkling OR still : {:?}", names(&f.matching_any(&[sparkling, still])));
+        assert_eq!(names(f.matching(drink)).len(), 6);
+        assert_eq!(names(f.matching(hot)), vec!["tea", "latte", "hot chocolate"]);
+        assert_eq!(names(&f.matching_all(&[hot, milk])), vec!["latte", "hot chocolate"]);
+        assert_eq!(names(&f.matching_any(&[sparkling, still])), vec!["soda", "water"]);
+
+        f.unmark(1, reg.lineage(latte)); // latte removed
+        assert_eq!(names(f.matching(hot)), vec!["tea", "hot chocolate"]);
     }
 }
 

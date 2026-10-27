@@ -1,14 +1,17 @@
 [package]
-name = "GCRT_API_Iventory"
+name = "GCRT_API_Inventory"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
-rand = "0.10.1"
-
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.8.2"
+rand = "0.8"
+rand_chacha = "0.3"
+
+[[bench]]
+name = "inventory_bench"
+harness = false # let criterion manage benchmark executions
 
 [[bin]]
 name = "example1"
-path = "src/example1.rs"
+path = "src/examples/example1.rs"
