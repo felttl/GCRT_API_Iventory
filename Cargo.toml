@@ -1,17 +1,25 @@
 [package]
-name = "GCRT_API_Inventory"
+name = "gcrt_api_inventory"
 version = "0.1.0"
 edition = "2024"
 
 [dev-dependencies]
-criterion = "0.8.2"
-rand = "0.8"
-rand_chacha = "0.3"
+criterion = {
+    version = "0.8.2",
+    features = ["html_reports"]
+}
+rand = "0.9"
+rand_chacha = "0.9"
+rdxsort = "0.3.0" # lib for radix sort algo (comparison with my impl of the algo)
 
 [[bench]]
 name = "inventory_bench"
 harness = false # let criterion manage benchmark executions
 
+[[bench]]
+name = "radix_bench"
+harness = false
+
 [[bin]]
-name = "example1"
-path = "src/examples/example1.rs"
+name = "demo1"
+path = "src/examples/demo1.rs"

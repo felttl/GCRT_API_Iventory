@@ -37,27 +37,21 @@ impl ItemTypeRegistryBuilder {
         Self::default()
     }
 
-    /// ## Add a type with no parents
-    /// - Parents must already be registered, so cycles are impossible.
-    pub fn add(&mut self, name: &str) -> Result<ItemTypeId, RegistryError> {
-        self.addwp(name, &[])
-    }
-
     /// ## Add a type with parents
     /// - Register a type with zero, one or several parents.
     /// - Parents must already be registered, so cycles are impossible (forbiden A->B->A).
-    pub fn addwp(&mut self, name: &str, parents: &[ItemTypeId]) -> Result<ItemTypeId, RegistryError> {
+    pub fn add(&mut self, name: &str, parents: &[ItemTypeId]) -> Result<ItemTypeId, RegistryError> {
         if self.by_name.contains_key(name) {
             return Err(RegistryError::DuplicateName(name.to_string()));
         }
-        for p: &ItemTypeId in parents {
+        for p in parents {
             if p.index() >= self.names.len() {
                 return Err(RegistryError::UnknownParent(*p));
             }
         }
         let id: ItemTypeId = ItemTypeId::new(self.names.len() as u32);
         let mut lineage: Vec<ItemTypeId> = vec![id];
-        for p: &ItemTypeId in parents {
+        for p in parents {
             for a in &self.lineage[p.index()] {
                 if !lineage.contains(a) {
                     lineage.push(*a); // diamond (several paths to one ancestor): kept once

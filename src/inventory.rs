@@ -5,7 +5,7 @@ use crate::inv_objs::item_type_registry::ItemTypeRegistry;
 use crate::slot::{Slot, SlotDefault};
 use crate::bit_set_filter::BitSetFilter;
 
-use std:sync::Arc;
+use std::sync::Arc;
 
 pub trait Inventory {
 

@@ -88,8 +88,8 @@ impl BitSetFilter {
 
     /// slot indexes whose bit is set in `bits`
     pub fn slot_indexes(bits: &[u64]) -> impl Iterator<Item = usize> + '_ {
-        bits.iter().enumerate().float_map(|(w, &word)| {
-            let mut words = word;
+        bits.iter().enumerate().flat_map(|(w, &word)| {
+            let mut word = word;
             std::iter::from_fn(move || {
                 if word == 0 {
                     None

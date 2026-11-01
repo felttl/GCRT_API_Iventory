@@ -1,4 +1,4 @@
-use GCRT_API_Inventory::inv_objs::item_type_registry::ItemTypeRegistryBuilder;
+use gcrt_api_inventory::inv_objs::item_type_registry::ItemTypeRegistryBuilder;
 
 fn main(){
     let dname = "demo1";
@@ -34,7 +34,7 @@ fn main(){
 }
 
 
-/**
+/*
  * question :
  * - du coup let itrb = itrb.build() c'est sencé être valide mais c'est bizarre je trouve...
  * de plus je viens d'aller voir dans le fichier et ça renvoie : "Arc<ItemTypeRegistry>" 
@@ -48,7 +48,7 @@ fn main(){
  * 
  */
 
-/**
+/*
  * - j'aimerais éviter les "mouvement" inutiles, par exemple dans
  * let drink =.... il y a "&[]" qui est inutile ici et j'aimerais
  * éviter de saisi des choses inutiles car ça alourdi l'affectation
