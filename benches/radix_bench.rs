@@ -4,7 +4,6 @@ use rand::seq::SliceRandom; // (buitins)
 
 /// radix sorting for `u32` data types
 pub(crate) fn radixu32(data: &[u32]) -> Vec<u32> {
-    // empty
     if data.is_empty() { return data.to_vec(); }
     // determine le nombre de passes
     let max: u32 = *data.iter().max().unwrap();
@@ -126,7 +125,70 @@ pub(crate) fn radixu32_adapt2(data: &[u32], nbbuckets: u32) -> Vec<u32> {
     flattened
 }
 
+// to show nbbuckets and nb passes we will add 2 parameters that will be changed by the function
+// to get the correct values (ref value edition)
 
+/// radix sorting for `u32` data types
+/// variant2 with data duplication removal
+/// - optimisation 1: remove `data` param duplication (when assigning into flattened for first read)
+/// - optimisation 2: remove `flattened` re-creation of the variable (end of the 5th for loop)
+/// - optimisation 3: remove computation of passes using input buckets number only, use 
+/// the range of bits required depending on the MIN and MAX value of the serie (much better)
+/// (included too, with the chosen buckets number)
+/// - perf" penalty 1 : dynamic "passes" computed from selected buckets (do not include max digit of the max value)
+/// - for improvements 1: optimisation 4:  (next) remove flattening conversions
+/// - for improvements 2: optimisation 5: (next) use continue in first if in the loop of minmax
+/// - for improvements 3: optimisation 6: (next) use else in front of second if, in the loop of minmax 
+/// (check difference beetween opti 5 and with differents profiles of data)
+/// - for improvements 4: optimisation 7: (next) make algo multithread
+/// - for improvements 4: optimisation 7: (next) make algo multi-types (scale first to 
+/// all u* numbers (u8, u16, u32, ...) then i8, i16 etc.., f8,...,d8,...)
+/// - or improvements 5: optimisation 8: (next) improve vector alloc (for lower input 
+/// size try to reduce vec alloc because vec alloc > computation need fo 10 items (in example))
+/// - last improvement: last opti: auto adapt buck count (remove input)
+pub(crate) fn radixu32_adapt3(data: &[u32], nbbuckets: u32) -> Vec<u32> {
+    if data.is_empty() { return Vec::new(); }
+    let max: u32 = *data.iter().max().unwrap();
+    if max == 0 { return data.to_vec(); } // 1 or more zeroes
+    // get minmax in single parkour
+    let mut min: u32 = data[0];
+    let mut max: u32 = data[0];
+    for &d in data {
+        if d < min { min = d; }
+        else if d > max { max = d; }
+    }
+    //let passes: u32 = (32 - max.leading_zeros()).div_ceil(8); // value max of passes = 10 ((WOM)optimisation of grouping variables into a single variable is possible)
+    let bits_per_pass = nbbuckets.ilog2();
+    let passes: u32 = (32 + bits_per_pass - 1) / bits_per_pass;
+    // create a vec of "boxes" (vecs of vec)
+    let n: usize = data.len();
+    let mut buckets: Vec<Vec<u32>> = vec![Vec::new();nbbuckets as usize];
+    let mut flattened: Vec<u32> = Vec::with_capacity(n);
+    let mut output: Vec<u32> = Vec::with_capacity(n);
+    let mask = nbbuckets - 1;
+    for &d in data {
+        // let digit: usize = ((d / 10u32.pow(p)) % 10) as usize; // storage of only a digit ((WOM) 0 to 9 possible values (a big memory loss fo the rest of the memory to uptimize later))
+        let digit: usize = (d & mask) as usize; // storage of only a digit ((WOM) 0 to 9 possible values (a big memory loss fo the rest of the memory to uptimize later))
+        buckets[digit].push(d);
+    }
+    for bucket in buckets.iter_mut() {
+        output.extend(bucket.drain(..));
+    }
+    std::mem::swap(&mut flattened, &mut output);
+    for p in 1..passes {
+        for &d in &flattened { // ascending order
+            // let digit: usize = ((d / 10u32.pow(p)) % 10) as usize; // storage of only a digit ((WOM) 0 to 9 possible values (a big memory loss fo the rest of the memory to uptimize later))
+            let digit: usize = ((d >> (bits_per_pass * p)) & mask) as usize; // storage of only a digit ((WOM) 0 to 9 possible values (a big memory loss fo the rest of the memory to uptimize later))
+            buckets[digit].push(d);
+        }
+        output.clear();
+        for bucket in buckets.iter_mut() {
+            output.extend(bucket.drain(..));
+        }
+        std::mem::swap(&mut flattened, &mut output);
+    }
+    flattened
+}
 
 /// u: number of wanted items
 /// seed: seed value for making the data same again
@@ -150,9 +212,6 @@ use std::hint::black_box;
 fn benchmarks(c: &mut Criterion){
     // variable + data declaration
     let mut group = c.benchmark_group("radix");
-    let sizes: Vec<usize> = vec![
-        10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000
-    ];
     let profiles: Vec<Box<dyn Fn(usize, u32) -> Vec<u32>>> = vec![
         Box::new(|n, seed| looop(n,seed,|rng|rng.random())), // random
         Box::new(|n, seed| { // sorted
@@ -198,7 +257,7 @@ fn benchmarks(c: &mut Criterion){
     let seed: u32 = 42;
 
     // benchmark here
-    for &size in &sizes{
+    for size in (1..=7).map(|exp|10_usize.pow(exp)){
         for (profile_id, profile) in profiles.iter().enumerate(){
             let data = profile(size, seed);
             group.bench_with_input(

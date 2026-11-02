@@ -1,5 +1,5 @@
 // inventory_test.rs
-use crate::inventory;
+use gcrt_api_inventory::inventory;
 
 #[test]
 fn test_add(){

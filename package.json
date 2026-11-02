@@ -1,0 +1,33 @@
+{
+  "name": "gcrt_api_iventory",
+  "version": "0.1.0",
+  "description": "a simple intuitive Inventory <u>back-end</u> with a lof of features (for games primarily, can be used for other purposes like stock management)",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "server": "node server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felttl/GCRT_API_Iventory.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/felttl/GCRT_API_Iventory/issues"
+  },
+  "homepage": "https://github.com/felttl/GCRT_API_Iventory#readme",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

@@ -15,7 +15,22 @@ UI part is made using TypeScript (with Tauri).
 > [!important]
 > test for rust code is include in the source code directly according to Rust rules (but i don't agree with this choice i prefer a dedicated repertory for tests to separate the real used code to test code...)
 
+### Requirements
+
+this project use Rust so `Cargo` (v1.98.1) must be installed into the user's device
+(feel free to install `rustc`)
+
+> [!Warning]
+> Vite (v8.3.5) and Node.js (v26.4.0) are required for generating the
+> benchmark summary file (1 chart for all information retrieved
+> from Criterion (from Rust benchmarks)) for sorting algorithms
+> and later for Inventory benchmarks. (because Criterion output are web files)
+
+no need to install Criterion, it's included in the project already.
+
 ### Execution and Running
+
+> for the Inventory (use only Cargo)
 
 ```bash
 # compile & run
@@ -26,6 +41,16 @@ cargo build
 ```
 for single files use : `rustc main.rs` and then run prog using `./main`.
 
+> for the benchmark summary 
+> (will use Node.js and Vite to generate html report)
+
+```bash
+npm install # for th 1st time
+npm run server # for data server (agglomerate)
+npm run dev # for web page (interface)
+```
+and then go to `http://localhost:5173` (or the<br>
+indicated URL marked by the `npm run dev` command)
 
 ### Benchmarks
 <!-- will be splitted later into a specific file with an URL placed here -->
